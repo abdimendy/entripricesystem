@@ -8,6 +8,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
 import ImageUpload from '../../components/ImageUpload';
+import { ensureArray } from '../../utils/apiHelpers';
 import { resolveImageUrl } from '../../utils/images';
 
 const emptyForm = {
@@ -49,8 +50,8 @@ export default function AdminBusinesses() {
     setLoading(true);
     try {
       const [biz, cats] = await Promise.all([businessApi.getAll(), categoryApi.getAll()]);
-      setBusinesses(biz.data);
-      setCategories(cats.data);
+      setBusinesses(ensureArray(biz.data));
+      setCategories(ensureArray(cats.data));
     } catch (err) {
       toast.error(err.friendlyMessage || 'Failed to load businesses');
     } finally {

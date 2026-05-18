@@ -1,0 +1,18 @@
+{
+  "name": "Yellow Book Directory",
+  "short_name": "YellowBook",
+  "description": "Somalia business telephone directory",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f59e0b",
+  "lang": "so",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

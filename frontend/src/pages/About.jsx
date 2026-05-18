@@ -1,47 +1,30 @@
 import { motion } from 'framer-motion';
 import { FaHandshake, FaLightbulb, FaUsers } from 'react-icons/fa';
+import { useLanguage } from '../context/LanguageContext';
+import SeoHead from '../components/SeoHead';
 import { fadeUp, staggerContainer, staggerItem } from '../utils/motion';
 
-const values = [
-  {
-    icon: FaLightbulb,
-    title: 'Innovation',
-    text: 'Modern digital directory built for Somalia\'s growing economy.',
-  },
-  {
-    icon: FaHandshake,
-    title: 'Trust',
-    text: 'Verified listings and transparent contact information for every business.',
-  },
-  {
-    icon: FaUsers,
-    title: 'Community',
-    text: 'Connecting customers with local enterprises across every district.',
-  },
-];
-
 export default function About() {
+  const { t } = useLanguage();
+
+  const values = [
+    { icon: FaLightbulb, title: t('about.innovation'), text: t('about.innovationText') },
+    { icon: FaHandshake, title: t('about.trust'), text: t('about.trustText') },
+    { icon: FaUsers, title: t('about.community'), text: t('about.communityText') },
+  ];
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <motion.div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <SeoHead title={t('about.title')} description={t('about.subtitle')} path="/about" />
       <motion.div {...fadeUp} className="mx-auto max-w-3xl text-center">
-        <h1 className="section-title">About YellowBook</h1>
-        <p className="section-subtitle mx-auto mt-4">
-          YellowBook Telephone Directory is Somalia&apos;s premier business listing platform —
-          helping people find phone numbers, addresses, and services with confidence.
-        </p>
+        <h1 className="section-title">{t('about.title')}</h1>
+        <p className="section-subtitle mx-auto mt-4">{t('about.subtitle')}</p>
       </motion.div>
 
       <motion.div {...fadeUp} className="card mx-auto mt-12 max-w-4xl p-8 lg:p-12">
-        <p className="text-slate-600 leading-relaxed">
-          Founded to modernize the traditional yellow pages, YellowBook brings together restaurants,
-          hotels, clinics, shops, and professional services in one searchable platform. Whether you
-          need a plumber in Hodan or a hotel near the airport, YellowBook puts the right number at
-          your fingertips.
-        </p>
-        <p className="mt-4 text-slate-600 leading-relaxed">
-          We partner with businesses of all sizes to increase visibility, accept listing payments via
-          mobile money, and provide downloadable PDF profiles for offline reference.
-        </p>
+        <p className="leading-relaxed text-slate-600">{t('about.p1')}</p>
+        <p className="mt-4 leading-relaxed text-slate-600">{t('about.p2')}</p>
+        <p className="mt-4 leading-relaxed text-slate-600">{t('about.p3')}</p>
       </motion.div>
 
       <motion.div
@@ -59,6 +42,6 @@ export default function About() {
           </motion.div>
         ))}
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

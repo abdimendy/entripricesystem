@@ -6,9 +6,12 @@ import { categoryApi } from '../api/categoryApi';
 import BusinessForm, { getEmptyBusinessForm } from '../components/BusinessForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PageHeader from '../components/PageHeader';
+import { ensureArray } from '../utils/apiHelpers';
 import { validateBusinessForm } from '../utils/validation';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function EditBusiness() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState(getEmptyBusinessForm());
@@ -33,7 +36,7 @@ export default function EditBusiness() {
           description: b.description || '',
           categoryId: String(b.categoryId),
         });
-        setCategories(categoriesRes.data);
+        setCategories(ensureArray(categoriesRes.data));
       } catch (err) {
         toast.error(err.friendlyMessage || 'Failed to load business');
         navigate('/businesses');
@@ -52,10 +55,10 @@ export default function EditBusiness() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateBusinessForm(form);
+    const validationErrors = validateBusinessForm(form, t);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      toast.error('Please fix the form errors');
+      toast.error(t('form.fixErrors'));
       return;
     }
 

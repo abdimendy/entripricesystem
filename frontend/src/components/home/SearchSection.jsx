@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiSearch } from 'react-icons/hi';
 import SectionBadge from '../ui/SectionBadge';
+import { ensureArray } from '../../utils/apiHelpers';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function SearchSection({ categories = [] }) {
+  const { t } = useLanguage();
+  const list = ensureArray(categories);
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -28,11 +32,9 @@ export default function SearchSection({ categories = [] }) {
           viewport={{ once: true }}
           className="text-center"
         >
-          <SectionBadge>Quick Search</SectionBadge>
-          <h2 className="section-title mt-4">Find Businesses Instantly</h2>
-          <p className="section-subtitle mx-auto">
-            Search by company name, category, or city across Somalia.
-          </p>
+          <SectionBadge>{t('home.quickSearch')}</SectionBadge>
+          <h2 className="section-title mt-4">{t('home.findInstantly')}</h2>
+          <p className="section-subtitle mx-auto">{t('home.searchSubtitle')}</p>
         </motion.div>
 
         <motion.form
@@ -44,7 +46,7 @@ export default function SearchSection({ categories = [] }) {
         >
           <input
             type="text"
-            placeholder="Company name"
+            placeholder={t('common.companyName')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="input-field sm:col-span-2 lg:col-span-1"
@@ -54,8 +56,8 @@ export default function SearchSection({ categories = [] }) {
             onChange={(e) => setCategoryId(e.target.value)}
             className="input-field"
           >
-            <option value="">All categories</option>
-            {categories.map((c) => (
+            <option value="">{t('common.allCategories')}</option>
+            {list.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
@@ -63,13 +65,13 @@ export default function SearchSection({ categories = [] }) {
           </select>
           <input
             type="text"
-            placeholder="City (e.g. Mogadishu)"
+            placeholder={t('common.cityPlaceholder')}
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="input-field"
           />
           <button type="submit" className="btn-primary justify-center sm:col-span-2 lg:col-span-1">
-            <HiSearch /> Search
+            <HiSearch /> {t('common.search')}
           </button>
         </motion.form>
       </div>

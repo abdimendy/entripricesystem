@@ -1,4 +1,5 @@
-import React from 'react';
+import { ensureArray } from '../utils/apiHelpers';
+import { useLanguage } from '../context/LanguageContext';
 
 export const getEmptyBusinessForm = () => ({
   name: '',
@@ -6,7 +7,7 @@ export const getEmptyBusinessForm = () => ({
   phone: '',
   email: '',
   address: '',
-  description: ''
+  description: '',
 });
 
 export default function BusinessForm({
@@ -16,22 +17,24 @@ export default function BusinessForm({
   onChange,
   onSubmit,
   submitLabel,
-  loading
+  loading,
 }) {
+  const { t } = useLanguage();
+  const categoryList = ensureArray(categories);
+  const label = submitLabel || t('form.submit');
+
   return (
     <form onSubmit={onSubmit} className="space-y-6 text-left">
-      
-      {/* Business Name */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-          Business Name
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+          {t('form.businessName')}
         </label>
         <input
           type="text"
           name="name"
           value={form.name}
           onChange={onChange}
-          placeholder="E.g., Sahal Tech Solutions"
+          placeholder={t('form.businessNamePh')}
           style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
           className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm placeholder-slate-500 outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
           disabled={loading}
@@ -39,10 +42,9 @@ export default function BusinessForm({
         {errors.name && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.name}</p>}
       </div>
 
-      {/* Category Dropdown */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-          Category
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+          {t('form.category')}
         </label>
         <select
           name="categoryId"
@@ -52,8 +54,10 @@ export default function BusinessForm({
           className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
           disabled={loading}
         >
-          <option value="" style={{ backgroundColor: '#1e293b' }}>Select a category</option>
-          {categories.map((cat) => (
+          <option value="" style={{ backgroundColor: '#1e293b' }}>
+            {t('form.selectCategory')}
+          </option>
+          {categoryList.map((cat) => (
             <option key={cat.id} value={cat.id} style={{ backgroundColor: '#1e293b' }}>
               {cat.name}
             </option>
@@ -62,35 +66,33 @@ export default function BusinessForm({
         {errors.categoryId && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.categoryId}</p>}
       </div>
 
-      {/* Phone & Email Grid */}
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-            Phone Number
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            {t('form.phone')}
           </label>
           <input
             type="text"
             name="phone"
             value={form.phone}
             onChange={onChange}
-            placeholder="E.g., 061XXXXXXX"
+            placeholder={t('form.phonePh')}
             style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
             className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm placeholder-slate-500 outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
             disabled={loading}
           />
           {errors.phone && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.phone}</p>}
         </div>
-
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-            Email Address
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            {t('form.email')}
           </label>
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={onChange}
-            placeholder="E.g., info@company.com"
+            placeholder={t('form.emailPh')}
             style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
             className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm placeholder-slate-500 outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
             disabled={loading}
@@ -99,17 +101,16 @@ export default function BusinessForm({
         </div>
       </div>
 
-      {/* Address */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-          Address / Location
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+          {t('form.address')}
         </label>
         <input
           type="text"
           name="address"
           value={form.address}
           onChange={onChange}
-          placeholder="E.g., Maka Al Mukarrama Road, Hodan, Mogadishu"
+          placeholder={t('form.addressPh')}
           style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
           className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm placeholder-slate-500 outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
           disabled={loading}
@@ -117,34 +118,31 @@ export default function BusinessForm({
         {errors.address && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.address}</p>}
       </div>
 
-      {/* Description */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-          Description
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+          {t('form.description')}
         </label>
         <textarea
           name="description"
           value={form.description}
           onChange={onChange}
-          placeholder="Tell us about the business services..."
-          rows="4"
+          placeholder={t('form.descriptionPh')}
+          rows={4}
           style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
-          className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm placeholder-slate-500 outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 resize-none"
+          className="w-full resize-none rounded-xl border border-white/10 px-4 py-3 text-sm placeholder-slate-500 outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
           disabled={loading}
         />
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-4 pt-4 border-t border-white/5">
+      <div className="flex justify-end gap-4 border-t border-white/5 pt-4">
         <button
           type="submit"
           className="rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 px-6 py-3 text-sm font-bold text-slate-900 shadow-lg shadow-yellow-500/25 transition hover:opacity-90 disabled:opacity-50"
           disabled={loading}
         >
-          {loading ? 'Saving Business...' : submitLabel}
+          {loading ? t('form.saving') : label}
         </button>
       </div>
-
     </form>
   );
 }

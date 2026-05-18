@@ -1,14 +1,17 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageToggle from '../components/LanguageToggle';
 import Logo from '../components/Logo';
 
 export default function Login() {
   const { login, loading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -20,11 +23,11 @@ export default function Login() {
     e.preventDefault();
     const result = await login(username.trim(), password);
     if (result.success) {
-      toast.success(result.devFallback ? 'Welcome!' : 'Welcome back!');
+      toast.success(result.devFallback ? t('common.welcomeDev') : t('common.welcome'));
       const from = location.state?.from || searchParams.get('from') || '/admin';
       navigate(from.startsWith('/') ? from : '/admin', { replace: true });
     } else {
-      toast.error(result.message || 'Invalid credentials');
+      toast.error(result.message || t('common.invalidCredentials'));
     }
   };
 
@@ -45,7 +48,8 @@ export default function Login() {
         transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      <div className="absolute right-4 top-4 z-20">
+      <div className="absolute right-4 top-4 z-20 flex gap-2">
+        <LanguageToggle />
         <ThemeToggle />
       </div>
 
@@ -58,23 +62,20 @@ export default function Login() {
         <div className="glass-card overflow-hidden p-8 shadow-2xl shadow-amber-500/10 sm:p-10">
           <div className="mb-8 flex flex-col items-center text-center">
             <Logo linkTo="/" size="lg" />
-            <h1 className="mt-6 text-2xl font-extrabold text-slate-900 dark:text-white">
-              Admin Sign In
-            </h1>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              YellowBook Directory — Somalia
-            </p>
+            <h1 className="mt-6 text-2xl font-extrabold text-slate-900 dark:text-white">{t('login.title')}</h1>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('login.brand')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="username" className="sr-only">
-                Username
+                {t('login.username')}
               </label>
               <input
                 id="username"
                 type="text"
                 autoComplete="username"
+                placeholder={t('login.username')}
                 className="input-field w-full"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -84,12 +85,13 @@ export default function Login() {
 
             <div className="relative">
               <label htmlFor="password" className="sr-only">
-                Password
+                {t('login.password')}
               </label>
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
+                placeholder={t('login.password')}
                 className="input-field w-full pr-12"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -99,18 +101,14 @@ export default function Login() {
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? t('login.password') : t('login.password')}
               >
                 {showPassword ? <FaEyeSlash className="h-4 w-4" /> : <FaEye className="h-4 w-4" />}
               </button>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full justify-center py-3.5 text-base"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
+            <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3.5 text-base">
+              {loading ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
         </div>
@@ -118,4 +116,3 @@ export default function Login() {
     </motion.div>
   );
 }
-

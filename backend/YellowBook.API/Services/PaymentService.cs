@@ -26,12 +26,16 @@ public class PaymentService : IPaymentService
 
     public async Task<(PaymentDto? Result, string? Error)> CreateAsync(CreatePaymentDto dto)
     {
-        if (await _businessRepository.GetByIdAsync(dto.BusinessId) is null)
+        if (!string.IsNullOrWhiteSpace(dto.CompanyWebsite))
+            return (null, "Invalid submission.");
+
+        if (await _businessRepository.GetByIdAsync(dto.BusinessId, approvedOnly: true) is null)
             return (null, "Business not found.");
 
         var payment = new Payment
         {
             BusinessId = dto.BusinessId,
+            PayerName = dto.PayerName.Trim(),
             Amount = dto.Amount,
             PaymentMethod = dto.PaymentMethod.Trim(),
             TransactionNumber = dto.TransactionNumber.Trim()
@@ -46,6 +50,7 @@ public class PaymentService : IPaymentService
         var existing = await _paymentRepository.GetByIdAsync(id);
         if (existing is null) return (null, "Payment not found.");
 
+        existing.PayerName = dto.PayerName.Trim();
         existing.Amount = dto.Amount;
         existing.PaymentMethod = dto.PaymentMethod.Trim();
         existing.TransactionNumber = dto.TransactionNumber.Trim();
@@ -65,6 +70,7 @@ public class PaymentService : IPaymentService
         Id = payment.Id,
         BusinessId = payment.BusinessId,
         BusinessName = payment.Business?.Name ?? string.Empty,
+        PayerName = payment.PayerName,
         Amount = payment.Amount,
         PaymentMethod = payment.PaymentMethod,
         TransactionNumber = payment.TransactionNumber,

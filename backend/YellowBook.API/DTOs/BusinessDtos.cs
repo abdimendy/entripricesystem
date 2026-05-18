@@ -16,6 +16,12 @@ public class BusinessDto
     public string? Website { get; set; }
     public string City { get; set; } = string.Empty;
     public double Rating { get; set; }
+    public bool IsFeatured { get; set; }
+    public bool IsApproved { get; set; }
+    public List<string> ImageUrls { get; set; } = new();
+    public Dictionary<string, string> OpeningHours { get; set; } = new();
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
@@ -47,10 +53,21 @@ public class CreateBusinessDto
     public string? Website { get; set; }
     public string City { get; set; } = "Mogadishu";
     public double Rating { get; set; } = 4.5;
+    public bool IsFeatured { get; set; }
+    public List<string>? ImageUrls { get; set; }
+    public Dictionary<string, string>? OpeningHours { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+}
+
+public class SubmitBusinessDto : CreateBusinessDto
+{
+    public string? CompanyWebsite { get; set; }
 }
 
 public class UpdateBusinessDto : CreateBusinessDto
 {
+    public bool IsApproved { get; set; } = true;
 }
 
 public class BusinessSearchResultDto
@@ -68,6 +85,8 @@ public class DashboardStatsDto
     public int TotalCategories { get; set; }
     public int TotalReviews { get; set; }
     public int TotalPayments { get; set; }
+    public decimal TotalPaymentAmount { get; set; }
+    public int PendingBusinesses { get; set; }
     public List<CategoryCountDto> BusinessesByCategory { get; set; } = new();
     public List<BusinessDto> RecentBusinesses { get; set; } = new();
 }

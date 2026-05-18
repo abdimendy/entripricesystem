@@ -14,6 +14,8 @@ public class YellowBookDbContext : DbContext
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<AppUser> Users => Set<AppUser>();
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<AnalyticsEvent> AnalyticsEvents => Set<AnalyticsEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,6 +51,8 @@ public class YellowBookDbContext : DbContext
             entity.Property(b => b.City).IsRequired().HasMaxLength(100);
             entity.Property(b => b.Rating).HasPrecision(3, 1);
             entity.Property(b => b.CreatedAt).IsRequired();
+            entity.Property(b => b.ImageUrlsJson);
+            entity.Property(b => b.OpeningHoursJson);
 
             entity.HasOne(b => b.Category)
                 .WithMany(c => c.Businesses)
@@ -67,9 +71,28 @@ public class YellowBookDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<ContactMessage>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Name).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.Email).IsRequired().HasMaxLength(150);
+            entity.Property(c => c.Phone).HasMaxLength(30);
+            entity.Property(c => c.Subject).IsRequired().HasMaxLength(150);
+            entity.Property(c => c.Message).IsRequired().HasMaxLength(2000);
+        });
+
+        modelBuilder.Entity<AnalyticsEvent>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.EventType).IsRequired().HasMaxLength(50);
+            entity.Property(a => a.Path).HasMaxLength(300);
+            entity.Property(a => a.Meta).HasMaxLength(500);
+        });
+
         modelBuilder.Entity<Payment>(entity =>
         {
             entity.HasKey(p => p.Id);
+            entity.Property(p => p.PayerName).IsRequired().HasMaxLength(150);
             entity.Property(p => p.Amount).HasPrecision(18, 2);
             entity.Property(p => p.PaymentMethod).IsRequired().HasMaxLength(50);
             entity.Property(p => p.TransactionNumber).IsRequired().HasMaxLength(100);

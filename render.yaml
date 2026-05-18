@@ -11,10 +11,16 @@ services:
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
+      # Optional: Neon/Supabase web Postgres (overrides Render DB when set)
+      - key: DATABASE_URL
+        sync: false
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: yellowbook-db
           property: connectionString
+      - key: ENABLE_SWAGGER
+        value: "true"
+      # e.g. https://yellowbook-live.vercel.app (also allowed via *.vercel.app in Program.cs)
       - key: FRONTEND_URL
         sync: false
       - key: Jwt__Key
@@ -26,6 +32,8 @@ services:
       - key: AdminUser__Username
         value: admin
       - key: AdminUser__Password
+        sync: false
+      - key: CLOUDINARY_URL
         sync: false
 
 databases:

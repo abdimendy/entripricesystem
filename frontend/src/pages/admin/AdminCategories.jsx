@@ -7,6 +7,7 @@ import { getCategoryIcon } from '../../components/CategoryCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Modal from '../../components/Modal';
 import EmptyState from '../../components/EmptyState';
+import { ensureArray } from '../../utils/apiHelpers';
 
 const ICON_OPTIONS = [
   { value: 'hotel', label: 'Hotels', emoji: '🏨' },
@@ -35,7 +36,7 @@ export default function AdminCategories() {
     setLoading(true);
     try {
       const { data } = await categoryApi.getAll();
-      setCategories(data);
+      setCategories(ensureArray(data));
     } catch (err) {
       toast.error(err.friendlyMessage || 'Failed to load categories');
     } finally {

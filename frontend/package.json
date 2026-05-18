@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/extract-classes.mjs && vite",
-    "build": "node scripts/extract-classes.mjs && vite build",
+    "dev": "vite",
+    "build": "vite build",
+    "predev": "node scripts/extract-classes.mjs",
+    "prebuild": "node scripts/extract-classes.mjs && node scripts/write-api-static.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

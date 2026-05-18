@@ -30,6 +30,14 @@ public static class DataSeeder
         var cat = categories.ToDictionary(c => c.Name, c => c.Id);
         var now = DateTime.UtcNow;
 
+        const string logo1 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/sample.jpg";
+        const string logo2 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/docs/models.jpg";
+        const string logo3 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/docs/coffee.jpg";
+        const string logo4 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/docs/kitchen.jpg";
+        const string logo5 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/docs/dog.jpg";
+        const string logo6 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/docs/woman-on-a-football-field.jpg";
+        const string logo7 = "https://res.cloudinary.com/demo/image/upload/w_800,h_400,c_fill,q_auto/docs/canvas.jpg";
+
         db.Businesses.AddRange(
             new Business
             {
@@ -41,6 +49,7 @@ public static class DataSeeder
                 City = "Mogadishu",
                 CategoryId = cat["Telecom"],
                 Website = "https://www.hormuud.com",
+                LogoUrl = logo1,
                 Rating = 4.8,
                 CreatedAt = now
             },
@@ -54,6 +63,7 @@ public static class DataSeeder
                 City = "Mogadishu",
                 CategoryId = cat["Banks"],
                 Website = "https://www.premierbank.so",
+                LogoUrl = logo2,
                 Rating = 4.6,
                 CreatedAt = now
             },
@@ -66,6 +76,7 @@ public static class DataSeeder
                 Address = "KM4, Mogadishu",
                 City = "Mogadishu",
                 CategoryId = cat["Banks"],
+                LogoUrl = logo3,
                 Rating = 4.5,
                 CreatedAt = now
             },
@@ -78,6 +89,7 @@ public static class DataSeeder
                 Address = "Hodan District, Mogadishu",
                 City = "Mogadishu",
                 CategoryId = cat["Telecom"],
+                LogoUrl = logo4,
                 Rating = 4.4,
                 CreatedAt = now
             },
@@ -90,6 +102,7 @@ public static class DataSeeder
                 Address = "Wadajir, Mogadishu",
                 City = "Mogadishu",
                 CategoryId = cat["Banks"],
+                LogoUrl = logo5,
                 Rating = 4.5,
                 CreatedAt = now
             },
@@ -103,6 +116,7 @@ public static class DataSeeder
                 City = "Mogadishu",
                 CategoryId = cat["Universities"],
                 Website = "https://www.simad.edu.so",
+                LogoUrl = logo6,
                 Rating = 4.7,
                 CreatedAt = now
             },
@@ -115,6 +129,7 @@ public static class DataSeeder
                 Address = "Digfeer, Mogadishu",
                 City = "Mogadishu",
                 CategoryId = cat["Hospitals"],
+                LogoUrl = logo7,
                 Rating = 4.3,
                 CreatedAt = now
             }

@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using YellowBook.API.Services;
 
 namespace YellowBook.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UploadController : ControllerBase
+public class UploadController(IImageStorageService imageStorage, IConfiguration configuration) : ControllerBase
 {
     private static readonly string[] AllowedTypes =
         ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
@@ -23,22 +24,35 @@ public class UploadController : ControllerBase
         if (!AllowedTypes.Contains(file.ContentType.ToLowerInvariant()))
             return BadRequest(new { message = "Only JPG, PNG, WEBP, or GIF images are allowed." });
 
-        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "businesses");
-        Directory.CreateDirectory(uploadsDir);
+        await using var stream = file.OpenReadStream();
+        var result = await imageStorage.UploadBusinessImageAsync(stream, file.FileName, file.ContentType);
 
-        var ext = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(ext)) ext = ".jpg";
-        var fileName = $"{Guid.NewGuid():N}{ext.ToLowerInvariant()}";
-        var filePath = Path.Combine(uploadsDir, fileName);
-
-        await using (var stream = new FileStream(filePath, FileMode.Create))
+        var url = result.Url;
+        if (result.Provider == "local" && url.StartsWith('/'))
         {
-            await file.CopyToAsync(stream);
+            var baseUrl = configuration["PublicApiUrl"]?.TrimEnd('/');
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                baseUrl = $"{Request.Scheme}://{Request.Host}";
+            url = $"{baseUrl}{url}";
         }
 
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var url = $"{baseUrl}/uploads/businesses/{fileName}";
-
-        return Ok(new { url, fileName });
+        return Ok(new
+        {
+            url,
+            fileName = result.PublicId ?? Path.GetFileName(url),
+            provider = result.Provider,
+            cloudinary = result.Provider == "cloudinary",
+        });
     }
+
+    [HttpGet("status")]
+    [AllowAnonymous]
+    public ActionResult<object> Status() =>
+        Ok(new
+        {
+            cloudinary = imageStorage.IsCloudinaryEnabled,
+            message = imageStorage.IsCloudinaryEnabled
+                ? "Images are stored on Cloudinary."
+                : "Cloudinary not configured — using local uploads folder.",
+        });
 }

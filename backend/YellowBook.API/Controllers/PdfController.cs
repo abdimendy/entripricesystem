@@ -22,9 +22,12 @@ public class PdfController : ControllerBase
     }
 
     [HttpGet("report")]
-    public async Task<IActionResult> DownloadReport()
+    public async Task<IActionResult> DownloadReport(
+        [FromQuery] string? name,
+        [FromQuery] int? categoryId,
+        [FromQuery] string? city)
     {
-        var pdf = await _pdfService.GenerateReportPdfAsync();
-        return File(pdf, "application/pdf", "yellowbook-report.pdf");
+        var pdf = await _pdfService.GenerateReportPdfAsync(name, categoryId, city);
+        return File(pdf, "application/pdf", "yellowbook-directory.pdf");
     }
 }

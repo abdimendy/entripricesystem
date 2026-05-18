@@ -29,7 +29,10 @@ public class ReviewService : IReviewService
 
     public async Task<(ReviewDto? Result, string? Error)> CreateAsync(CreateReviewDto dto)
     {
-        if (await _businessRepository.GetByIdAsync(dto.BusinessId) is null)
+        if (!string.IsNullOrWhiteSpace(dto.CompanyWebsite))
+            return (null, "Invalid submission.");
+
+        if (await _businessRepository.GetByIdAsync(dto.BusinessId, approvedOnly: true) is null)
             return (null, "Business not found.");
 
         var review = new Review
@@ -41,6 +44,7 @@ public class ReviewService : IReviewService
         };
 
         var created = await _reviewRepository.AddAsync(review);
+        await _businessRepository.RecalculateRatingAsync(dto.BusinessId);
         return (MapToDto(created), null);
     }
 

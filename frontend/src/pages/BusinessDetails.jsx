@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
-  FaDownload,
+  FaArrowLeft,
   FaEnvelope,
   FaGlobe,
   FaMapMarkerAlt,
@@ -11,199 +11,175 @@ import {
   FaStar,
 } from 'react-icons/fa';
 import { businessApi } from '../api/businessApi';
-import { pdfApi } from '../api/pdfApi';
-import { reviewApi } from '../api/reviewApi';
+import { DownloadBusinessPdfButton } from '../components/DownloadPdfButton';
+import ShareButtons from '../components/ShareButtons';
+import BusinessGallery from '../components/BusinessGallery';
+import BusinessMap from '../components/BusinessMap';
+import OpeningHours from '../components/OpeningHours';
+import BusinessReviews from '../components/BusinessReviews';
+import SeoHead from '../components/SeoHead';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { trackEvent } from '../utils/analytics';
+import { demoBusinessList } from '../data/demoData';
+import { cloudinaryTransform, resolveImageUrl } from '../utils/images';
 import { fadeUp } from '../utils/motion';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function BusinessDetails() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const [business, setBusiness] = useState(null);
-  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
+    let cancelled = false;
+    (async () => {
       setLoading(true);
       try {
-        const [bizRes, revRes] = await Promise.all([
-          businessApi.getById(id),
-          reviewApi.getByBusiness(id),
-        ]);
-        setBusiness(bizRes.data);
-        setReviews(revRes.data);
-      } catch (err) {
-        toast.error(err.friendlyMessage || 'Business not found');
+        const { data } = await businessApi.getById(id);
+        if (!cancelled) setBusiness(data);
+      } catch {
+        const fallback = demoBusinessList.find((b) => String(b.id) === String(id));
+        if (!cancelled) {
+          if (fallback) setBusiness(fallback);
+          else toast.error(t('details.notFound'));
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    })();
+    trackEvent('business_view', { businessId: Number(id), path: `/businesses/${id}` });
+    return () => {
+      cancelled = true;
     };
-    load();
   }, [id]);
-
-  const handlePdf = async () => {
-    setPdfLoading(true);
-    try {
-      await pdfApi.downloadBusiness(id, `${business?.name || 'business'}.pdf`);
-      toast.success('PDF downloaded');
-    } catch (err) {
-      toast.error(err.friendlyMessage || 'Failed to download PDF');
-    } finally {
-      setPdfLoading(false);
-    }
-  };
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
+      <motion.div className="flex justify-center py-24" {...fadeUp}>
+        <LoadingSpinner message={t('details.loading')} />
+      </motion.div>
     );
   }
 
   if (!business) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 text-center">
-        <h1 className="text-2xl font-bold">Business not found</h1>
-        <Link to="/businesses" className="btn-primary mt-6">
-          Back to directory
+      <motion.div className="mx-auto max-w-2xl px-4 py-20 text-center" {...fadeUp}>
+        <p className="text-lg font-semibold text-slate-800 dark:text-white">{t('details.notFound')}</p>
+        <Link to="/businesses" className="btn-primary mt-6 inline-flex">
+          <FaArrowLeft /> {t('details.backDirectory')}
         </Link>
-      </div>
+      </motion.div>
     );
   }
 
-  const galleryPlaceholders = [1, 2, 3, 4];
+  const heroSrc = cloudinaryTransform(
+    resolveImageUrl(business.logoUrl, business.name),
+    'w_1200,h_420,c_fill,q_auto'
+  );
 
   return (
-    <motion.div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8" {...fadeUp}>
-      <Link to="/businesses" className="text-sm font-semibold text-amber-600 hover:underline">
-        ← Back to businesses
-      </Link>
+    <motion.article className="pb-16" {...fadeUp}>
+      <SeoHead title={business.name} description={business.description} path={`/businesses/${id}`} />
+      <div className="relative h-52 overflow-hidden bg-slate-200 sm:h-64 md:h-72 dark:bg-slate-800">
+        <img
+          src={heroSrc}
+          alt={business.name}
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = resolveImageUrl(null, business.name);
+          }}
+        />
+        <motion.div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
+        <Link
+          to="/businesses"
+          className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-lg bg-white/95 px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-md backdrop-blur-sm transition hover:bg-white"
+        >
+          <FaArrowLeft className="h-3.5 w-3.5" /> {t('details.back')}
+        </Link>
+        {business.categoryName && (
+          <span className="absolute right-4 top-4 rounded-lg bg-amber-500 px-3 py-1 text-xs font-bold text-slate-900 shadow">
+            {business.categoryName}
+          </span>
+        )}
+      </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="card p-8">
-            <div className="flex flex-wrap items-start gap-6">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-yellow-100 text-3xl font-bold text-amber-700">
-                {business.logoUrl ? (
-                  <img
-                    src={business.logoUrl}
-                    alt=""
-                    className="h-full w-full rounded-2xl object-cover"
-                  />
-                ) : (
-                  business.name?.charAt(0)
-                )}
-              </div>
-              <div className="flex-1">
-                <h1 className="text-3xl font-extrabold text-slate-900">{business.name}</h1>
-                <span className="mt-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
-                  {business.categoryName}
-                </span>
-                <div className="mt-3 flex items-center gap-2 text-amber-600">
-                  <FaStar />
-                  <span className="font-bold">{Number(business.rating).toFixed(1)}</span>
-                  <span className="text-slate-500">
-                    ({business.reviewCount || reviews.length} reviews)
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handlePdf}
-                disabled={pdfLoading}
-                className="btn-primary"
-              >
-                <FaDownload /> {pdfLoading ? 'Downloading…' : 'Download PDF'}
-              </button>
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="-mt-10 relative rounded-2xl border border-slate-200/80 bg-white p-6 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl">
+                {business.name}
+              </h1>
+              <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-amber-600 dark:text-amber-400">
+                <FaStar className="h-4 w-4" />
+                {Number(business.rating).toFixed(1)} {t('details.rating')}
+              </p>
             </div>
-            {business.description && (
-              <p className="mt-6 leading-relaxed text-slate-600">{business.description}</p>
-            )}
-            <ul className="mt-8 space-y-3 text-slate-700">
+            <div className="flex flex-wrap gap-2">
+              <DownloadBusinessPdfButton businessId={business.id} />
+              <ShareButtons business={business} />
+            </div>
+          </div>
+
+          {business.isFeatured && (
+            <span className="mt-3 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">{t('common.featured')}</span>
+          )}
+
+          {business.description && (
+            <p className="mt-4 text-slate-600 leading-relaxed dark:text-slate-300">
+              {business.description}
+            </p>
+          )}
+
+          <ul className="mt-6 space-y-3 text-sm text-slate-700 dark:text-slate-300">
+            {business.phone && (
               <li className="flex items-center gap-3">
-                <FaPhone className="text-amber-500" />
-                <a href={`tel:${business.phone}`} className="hover:text-amber-700">
+                <FaPhone className="shrink-0 text-amber-500" />
+                <a href={`tel:${business.phone}`} className="font-medium hover:text-amber-600">
                   {business.phone}
                 </a>
               </li>
+            )}
+            {business.email && (
               <li className="flex items-center gap-3">
-                <FaEnvelope className="text-amber-500" />
-                <a href={`mailto:${business.email}`} className="hover:text-amber-700">
+                <FaEnvelope className="shrink-0 text-amber-500" />
+                <a href={`mailto:${business.email}`} className="font-medium hover:text-amber-600">
                   {business.email}
                 </a>
               </li>
-              <li className="flex items-start gap-3">
-                <FaMapMarkerAlt className="mt-1 text-amber-500" />
-                {business.address}, {business.city}
-              </li>
-              {business.website && (
-                <li className="flex items-center gap-3">
-                  <FaGlobe className="text-amber-500" />
-                  <a
-                    href={business.website}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-amber-700"
-                  >
-                    {business.website}
-                  </a>
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <div className="card mt-8 p-8">
-            <h2 className="text-xl font-bold text-slate-900">Gallery</h2>
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {galleryPlaceholders.map((n) => (
-                <div
-                  key={n}
-                  className="flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-yellow-50 to-amber-100 text-sm text-slate-500"
-                >
-                  Photo {n}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card mt-8 p-8">
-            <h2 className="text-xl font-bold text-slate-900">Reviews</h2>
-            {reviews.length ? (
-              <ul className="mt-6 divide-y divide-slate-100">
-                {reviews.map((r) => (
-                  <li key={r.id} className="py-5 first:pt-0">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-slate-900">{r.userName}</p>
-                      <span className="flex gap-0.5 text-amber-500">
-                        {Array.from({ length: r.rating }).map((_, i) => (
-                          <FaStar key={i} className="h-3.5 w-3.5" />
-                        ))}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-slate-600">{r.comment}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-4 text-slate-500">No reviews yet.</p>
             )}
-          </div>
-        </div>
+            {(business.address || business.city) && (
+              <li className="flex items-start gap-3">
+                <FaMapMarkerAlt className="mt-0.5 shrink-0 text-amber-500" />
+                <span>
+                  {business.address}
+                  {business.city ? `, ${business.city}` : ''}
+                </span>
+              </li>
+            )}
+            {business.website && (
+              <li className="flex items-center gap-3">
+                <FaGlobe className="shrink-0 text-amber-500" />
+                <a
+                  href={business.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-amber-600 hover:underline dark:text-amber-400"
+                >
+                  {business.website.replace(/^https?:\/\//, '')}
+                </a>
+              </li>
+            )}
+          </ul>
 
-        <aside className="space-y-6">
-          <div className="card p-6">
-            <h3 className="font-bold text-slate-900">Contact</h3>
-            <a href={`tel:${business.phone}`} className="btn-primary mt-4 w-full justify-center">
-              <FaPhone /> Call Now
-            </a>
-          </div>
-          <div className="card flex min-h-[200px] items-center justify-center p-6 text-center text-sm text-slate-500">
-            Map placeholder — {business.city}
-          </div>
-        </aside>
+          <BusinessGallery business={business} />
+          <OpeningHours hours={business.openingHours} />
+          <BusinessMap business={business} />
+          <BusinessReviews businessId={business.id} />
+        </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }

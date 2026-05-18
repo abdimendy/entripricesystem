@@ -14,6 +14,12 @@ public class Business
     public string? Website { get; set; }
     public string City { get; set; } = "Mogadishu";
     public double Rating { get; set; } = 4.5;
+    public bool IsFeatured { get; set; }
+    public bool IsApproved { get; set; } = true;
+    public string? ImageUrlsJson { get; set; }
+    public string? OpeningHoursJson { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();

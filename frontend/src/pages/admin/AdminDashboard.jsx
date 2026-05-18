@@ -7,6 +7,7 @@ import { paymentApi } from '../../api/paymentApi';
 import { pdfApi } from '../../api/pdfApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
+import { ensureArray } from '../../utils/apiHelpers';
 
 const emptyStats = {
   totalBusinesses: 0,
@@ -45,7 +46,7 @@ export default function AdminDashboard() {
       }
 
       if (payResult.status === 'fulfilled') {
-        setPayments(Array.isArray(payResult.value.data) ? payResult.value.data.slice(0, 8) : []);
+        setPayments(ensureArray(payResult.value.data).slice(0, 8));
       } else {
         setPayments([]);
       }
@@ -83,7 +84,7 @@ export default function AdminDashboard() {
 
   const displayStats = stats ?? emptyStats;
   const maxCategoryCount = Math.max(
-    ...(displayStats.businessesByCategory?.map((c) => c.count) || [1]),
+    ...(ensureArray(displayStats.businessesByCategory).map((c) => c.count) || [1]),
     1
   );
 
@@ -161,11 +162,11 @@ export default function AdminDashboard() {
               Manage
             </Link>
           </div>
-          {(displayStats.businessesByCategory?.length ?? 0) === 0 ? (
+          {ensureArray(displayStats.businessesByCategory).length === 0 ? (
             <EmptyState title="No category data" className="py-8" />
           ) : (
             <ul className="mt-6 space-y-4">
-              {displayStats.businessesByCategory.map((c) => (
+              {ensureArray(displayStats.businessesByCategory).map((c) => (
                 <li key={c.categoryName}>
                   <div className="mb-1.5 flex items-center justify-between text-sm">
                     <span className="font-semibold text-slate-700 dark:text-slate-300">{c.categoryName}</span>
@@ -192,11 +193,11 @@ export default function AdminDashboard() {
               Manage
             </Link>
           </div>
-          {(displayStats.recentBusinesses?.length ?? 0) === 0 ? (
+          {ensureArray(displayStats.recentBusinesses).length === 0 ? (
             <EmptyState title="No businesses yet" className="py-8" />
           ) : (
             <ul className="mt-4 divide-y divide-slate-100 dark:divide-slate-700">
-              {displayStats.recentBusinesses.map((b) => (
+              {ensureArray(displayStats.recentBusinesses).map((b) => (
                 <li key={b.id} className="flex items-center justify-between gap-4 py-4">
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white">{b.name}</p>

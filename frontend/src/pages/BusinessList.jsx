@@ -6,7 +6,9 @@ import { businessApi } from '../api/businessApi';
 import BusinessCard from '../components/BusinessCard';
 import DeleteConfirmation from '../components/DeleteConfirmation';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { DownloadDirectoryPdfButton } from '../components/DownloadPdfButton';
 import PageHeader from '../components/PageHeader';
+import { ensureArray } from '../utils/apiHelpers';
 
 export default function BusinessList() {
   const [businesses, setBusinesses] = useState([]);
@@ -18,7 +20,7 @@ export default function BusinessList() {
     setLoading(true);
     try {
       const { data } = await businessApi.getAll();
-      setBusinesses(data);
+      setBusinesses(ensureArray(data));
     } catch (err) {
       toast.error(err.friendlyMessage || 'Failed to load businesses');
     } finally {
@@ -51,10 +53,13 @@ export default function BusinessList() {
         title="All Businesses"
         subtitle={`${businesses.length} listings in the directory`}
         action={
-          <Link to="/add-business" className="btn-primary">
-            <Plus className="h-4 w-4" />
-            Add Business
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <DownloadDirectoryPdfButton />
+            <Link to="/add-business" className="btn-primary">
+              <Plus className="h-4 w-4" />
+              Add Business
+            </Link>
+          </div>
         }
       />
 

@@ -1,71 +1,62 @@
 {
   "info": {
-    "name": "Yellow Book Telephone Directory API",
-    "description": "Postman collection for Yellow Book CRUD APIs",
+    "name": "Yellow Book API (PostgreSQL)",
+    "description": "Import this collection in Postman. Start API: .\\scripts\\start-postgres-and-api.ps1\n\nDefault admin: admin / Admin@123\nBase URL: http://localhost:5261/api",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5261/api" }
+    { "key": "baseUrl", "value": "http://localhost:5261/api" },
+    { "key": "token", "value": "" }
   ],
   "item": [
     {
-      "name": "Businesses",
+      "name": "Auth",
       "item": [
         {
-          "name": "GET All Businesses",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/businesses"
-          }
-        },
-        {
-          "name": "GET Business By Id",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/businesses/1"
-          }
-        },
-        {
-          "name": "GET Search Businesses",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/businesses/search?name=hotel",
-              "host": ["{{baseUrl}}"],
-              "path": ["businesses", "search"],
-              "query": [{ "key": "name", "value": "hotel" }]
+          "name": "POST Login (saves token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  pm.collectionVariables.set('token', j.token);",
+                  "  pm.test('Login OK', () => pm.expect(j.token).to.be.a('string'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
             }
-          }
-        },
-        {
-          "name": "POST Create Business",
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"City Hotel\",\n  \"phone\": \"+1-555-9999\",\n  \"email\": \"stay@cityhotel.com\",\n  \"address\": \"88 Park Avenue\",\n  \"description\": \"Budget friendly hotel\",\n  \"categoryId\": 2\n}"
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}"
             },
-            "url": "{{baseUrl}}/businesses"
+            "url": "{{baseUrl}}/auth/login"
           }
         },
         {
-          "name": "PUT Update Business",
+          "name": "GET Me (requires token)",
           "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"City Hotel Updated\",\n  \"phone\": \"+1-555-9999\",\n  \"email\": \"info@cityhotel.com\",\n  \"address\": \"88 Park Avenue, Suite 10\",\n  \"description\": \"Renovated rooms\",\n  \"categoryId\": 2\n}"
-            },
-            "url": "{{baseUrl}}/businesses/1"
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/me"
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
         {
-          "name": "DELETE Business",
+          "name": "GET Health + PostgreSQL",
           "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/businesses/1"
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
           }
         }
       ]
@@ -75,21 +66,126 @@
       "item": [
         {
           "name": "GET All Categories",
+          "request": { "method": "GET", "url": "{{baseUrl}}/categories" }
+        },
+        {
+          "name": "POST Create Category (auth)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Technology\",\n  \"description\": \"Tech services\",\n  \"icon\": \"tech\"\n}"
+            },
+            "url": "{{baseUrl}}/categories"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Businesses",
+      "item": [
+        {
+          "name": "GET All Businesses",
+          "request": { "method": "GET", "url": "{{baseUrl}}/businesses" }
+        },
+        {
+          "name": "GET Featured",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/categories"
+            "url": {
+              "raw": "{{baseUrl}}/businesses/featured?count=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["businesses", "featured"],
+              "query": [{ "key": "count", "value": "6" }]
+            }
           }
         },
         {
-          "name": "POST Create Category",
+          "name": "GET Search",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/businesses/search?name=bank&page=1&pageSize=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["businesses", "search"],
+              "query": [
+                { "key": "name", "value": "bank" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "12" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Business By Id",
+          "request": { "method": "GET", "url": "{{baseUrl}}/businesses/1" }
+        },
+        {
+          "name": "POST Create Business (auth)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"City Hotel\",\n  \"phone\": \"+252-61-9999999\",\n  \"email\": \"stay@cityhotel.so\",\n  \"address\": \"KM4 Mogadishu\",\n  \"description\": \"Budget friendly hotel\",\n  \"categoryId\": 1,\n  \"city\": \"Mogadishu\",\n  \"rating\": 4.5\n}"
+            },
+            "url": "{{baseUrl}}/businesses"
+          }
+        },
+        {
+          "name": "PUT Update Business (auth)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"City Hotel Updated\",\n  \"phone\": \"+252-61-9999999\",\n  \"email\": \"info@cityhotel.so\",\n  \"address\": \"KM4 Mogadishu\",\n  \"description\": \"Renovated\",\n  \"categoryId\": 1,\n  \"city\": \"Mogadishu\",\n  \"rating\": 4.6\n}"
+            },
+            "url": "{{baseUrl}}/businesses/1"
+          }
+        },
+        {
+          "name": "DELETE Business (auth)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/businesses/99"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "GET Reviews by Business",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reviews/business/1" }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "POST Create Payment",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Technology\"\n}"
+              "raw": "{\n  \"payerName\": \"Ahmed Ali\",\n  \"businessId\": 1,\n  \"amount\": 25.50,\n  \"paymentMethod\": \"EVC Plus\",\n  \"transactionNumber\": \"TXN-123456\"\n}"
             },
-            "url": "{{baseUrl}}/categories"
+            "url": "{{baseUrl}}/payments"
           }
         }
       ]
@@ -99,10 +195,7 @@
       "item": [
         {
           "name": "GET Dashboard Stats",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/dashboard/stats"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/dashboard/stats" }
         }
       ]
     }

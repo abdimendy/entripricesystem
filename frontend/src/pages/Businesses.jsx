@@ -8,23 +8,19 @@ import { categoryApi } from '../api/categoryApi';
 import BusinessCard from '../components/BusinessCard';
 import EmptyState from '../components/EmptyState';
 import Pagination from '../components/Pagination';
+import { DownloadDirectoryPdfButton } from '../components/DownloadPdfButton';
 import SkeletonCard from '../components/SkeletonCard';
+import { demoBusinessList, demoCategories } from '../data/demoData';
+import { ensureArray, normalizeSearchResponse } from '../utils/apiHelpers';
 import { fadeUp } from '../utils/motion';
+import { trackEvent } from '../utils/analytics';
+import SeoHead from '../components/SeoHead';
+import { useLanguage } from '../context/LanguageContext';
 
 const PAGE_SIZE = 12;
 
-function normalizeSearchResponse(data, fallbackPage = 1) {
-  const items = data?.items ?? [];
-  const totalCount = data?.totalCount ?? 0;
-  const page = data?.page ?? fallbackPage;
-  const pageSize = data?.pageSize ?? PAGE_SIZE;
-  const totalPages =
-    data?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize) || 1);
-
-  return { items, totalCount, page, pageSize, totalPages };
-}
-
 export default function Businesses() {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [results, setResults] = useState({
@@ -43,7 +39,10 @@ export default function Businesses() {
   const [filters, setFilters] = useState({ name, categoryId, city });
 
   useEffect(() => {
-    categoryApi.getAll().then((r) => setCategories(r.data)).catch(() => {});
+    categoryApi
+      .getAll()
+      .then((r) => setCategories(ensureArray(r.data)))
+      .catch(() => setCategories(demoCategories));
   }, []);
 
   useEffect(() => {
@@ -60,10 +59,17 @@ export default function Businesses() {
         page,
         pageSize: PAGE_SIZE,
       });
-      setResults(normalizeSearchResponse(data, page));
-    } catch (err) {
-      toast.error(err.friendlyMessage || 'Failed to load businesses');
-      setResults({ items: [], totalPages: 1, page: 1, totalCount: 0 });
+      setResults(normalizeSearchResponse(data, page, PAGE_SIZE));
+    } catch {
+      const start = (page - 1) * PAGE_SIZE;
+      const items = demoBusinessList.slice(start, start + PAGE_SIZE);
+      setResults({
+        items,
+        totalCount: demoBusinessList.length,
+        page,
+        pageSize: PAGE_SIZE,
+        totalPages: Math.max(1, Math.ceil(demoBusinessList.length / PAGE_SIZE)),
+      });
     } finally {
       setLoading(false);
     }
@@ -81,6 +87,7 @@ export default function Businesses() {
     if (filters.city?.trim()) next.set('city', filters.city.trim());
     next.set('page', '1');
     setSearchParams(next);
+    trackEvent('search', { path: '/businesses' });
   };
 
   const clearFilters = () => {
@@ -99,15 +106,19 @@ export default function Businesses() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <motion.div {...fadeUp}>
-        <h1 className="section-title">Business Directory</h1>
-        <p className="section-subtitle">
-          {results.totalCount > 0
-            ? `Showing ${results.items.length} of ${results.totalCount} businesses`
-            : hasActiveFilters
-              ? 'No matches — try different keywords'
-              : 'Search by name, category, or city'}
-        </p>
+      <SeoHead title={t('business.directory')} description={t('business.directoryDesc')} path="/businesses" />
+      <motion.div {...fadeUp} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <motion.div>
+          <h1 className="section-title">{t('business.directory')}</h1>
+          <p className="section-subtitle">
+            {results.totalCount > 0
+              ? t('business.showing', { shown: results.items.length, total: results.totalCount })
+              : hasActiveFilters
+                ? t('business.noMatches')
+                : t('business.searchHint')}
+          </p>
+        </motion.div>
+        <DownloadDirectoryPdfButton filterParams={{ name: name || undefined, categoryId: categoryId || undefined, city: city || undefined }} />
       </motion.div>
 
       <form
@@ -116,7 +127,7 @@ export default function Businesses() {
       >
         <input
           type="search"
-          placeholder="Name, phone, email..."
+          placeholder={t('common.namePhoneEmail')}
           value={filters.name}
           onChange={(e) => setFilters((f) => ({ ...f, name: e.target.value }))}
           className="input-field sm:col-span-2"
@@ -128,7 +139,7 @@ export default function Businesses() {
           className="input-field"
           aria-label="Category"
         >
-          <option value="">All categories</option>
+          <option value="">{t('common.allCategories')}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -137,7 +148,7 @@ export default function Businesses() {
         </select>
         <input
           type="text"
-          placeholder="City (e.g. Mogadishu)"
+          placeholder={t('common.cityPlaceholder')}
           value={filters.city}
           onChange={(e) => setFilters((f) => ({ ...f, city: e.target.value }))}
           className="input-field"
@@ -145,11 +156,11 @@ export default function Businesses() {
         />
         <div className="flex gap-2 sm:col-span-2 lg:col-span-1">
           <button type="submit" className="btn-primary flex-1 justify-center">
-            <HiSearch /> Search
+            <HiSearch /> {t('common.search')}
           </button>
           {hasActiveFilters && (
             <button type="button" onClick={clearFilters} className="btn-secondary px-4">
-              Clear
+              {t('common.clear')}
             </button>
           )}
         </div>
@@ -179,9 +190,9 @@ export default function Businesses() {
       ) : (
         <div className="mt-10">
           <EmptyState
-            title="No businesses found"
-            message="Try another name, category, or city — or clear filters to see all listings."
-            actionLabel={hasActiveFilters ? 'Clear filters' : undefined}
+            title={t('business.emptyTitle')}
+            message={t('business.emptyMessage')}
+            actionLabel={hasActiveFilters ? t('business.clearFilters') : undefined}
             onAction={hasActiveFilters ? clearFilters : undefined}
           />
         </div>

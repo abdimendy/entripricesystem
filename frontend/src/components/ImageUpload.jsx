@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaCamera, FaSpinner } from 'react-icons/fa';
 import { uploadApi } from '../api/uploadApi';
@@ -7,6 +7,14 @@ import { resolveImageUrl } from '../utils/images';
 export default function ImageUpload({ value, onChange, name = 'Business' }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [cloudinaryReady, setCloudinaryReady] = useState(null);
+
+  useEffect(() => {
+    uploadApi
+      .status()
+      .then(({ data }) => setCloudinaryReady(!!data.cloudinary))
+      .catch(() => setCloudinaryReady(false));
+  }, []);
 
   const preview = resolveImageUrl(value, name);
 
@@ -58,6 +66,16 @@ export default function ImageUpload({ value, onChange, name = 'Business' }) {
         <FaCamera /> {uploading ? 'Uploading...' : 'Upload business photo'}
       </button>
       <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+        {cloudinaryReady === true && (
+          <span className="mb-1 block font-semibold text-emerald-600 dark:text-emerald-400">
+            Cloudinary connected — uploads go to your account
+          </span>
+        )}
+        {cloudinaryReady === false && (
+          <span className="mb-1 block text-amber-600 dark:text-amber-400">
+            Local storage — run .\scripts\setup-cloudinary.ps1 for Cloudinary
+          </span>
+        )}
         Or paste image URL below (JPG, PNG, max 5MB)
       </p>
     </div>

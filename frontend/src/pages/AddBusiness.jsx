@@ -6,9 +6,12 @@ import { categoryApi } from '../api/categoryApi';
 import BusinessForm, { getEmptyBusinessForm } from '../components/BusinessForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PageHeader from '../components/PageHeader';
+import { ensureArray } from '../utils/apiHelpers';
 import { validateBusinessForm } from '../utils/validation';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AddBusiness() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [form, setForm] = useState(getEmptyBusinessForm());
   const [errors, setErrors] = useState({});
@@ -19,8 +22,8 @@ export default function AddBusiness() {
   useEffect(() => {
     categoryApi
       .getAll()
-      .then(({ data }) => setCategories(data))
-      .catch((err) => toast.error(err.friendlyMessage || 'Failed to load categories'))
+      .then(({ data }) => setCategories(ensureArray(data)))
+      .catch((err) => toast.error(err.friendlyMessage || t('form.loadCategoriesFailed')))
       .finally(() => setLoadingCategories(false));
   }, []);
 
@@ -32,35 +35,36 @@ export default function AddBusiness() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateBusinessForm(form);
+    const validationErrors = validateBusinessForm(form, t);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      toast.error('Fadlan sax khaladaadka form-ka!');
+      toast.error(t('form.fixErrors'));
       return;
     }
 
     setLoading(true);
     try {
-      await businessApi.create({
+      await businessApi.submit({
         ...form,
         categoryId: Number(form.categoryId),
+        companyWebsite: '',
       });
-      toast.success('Ganacsiga si guul leh ayaa loo kaydiyay!');
+      toast.success(t('form.submitted'));
       navigate('/businesses');
     } catch (err) {
-      toast.error(err.friendlyMessage || 'Wuu ku fashilmay inuu kaydiyo ganacsiga');
+      toast.error(err.friendlyMessage || t('form.saveFailed'));
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingCategories) return <LoadingSpinner message="Loading form..." />;
+  if (loadingCategories) return <LoadingSpinner message={t('form.loadingForm')} />;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 text-left">
       <PageHeader
-        title="Add Business"
-        subtitle="Create a new directory listing"
+        title={t('addBusinessPage.title')}
+        subtitle={t('addBusinessPage.subtitle')}
       />
       <section className="rounded-2xl border border-white/10 bg-slate-900 p-6 lg:p-8 shadow-xl">
         <BusinessForm
@@ -69,7 +73,7 @@ export default function AddBusiness() {
           categories={categories}
           onChange={handleChange}
           onSubmit={handleSubmit}
-          submitLabel="Add Business"
+          submitLabel={t('addBusinessPage.submit')}
           loading={loading}
         />
       </section>

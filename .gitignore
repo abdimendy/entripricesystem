@@ -11,6 +11,7 @@ dist/
 # Environment
 .env
 .env.local
+.env.vercel
 
 # IDE
 .vs/
@@ -25,3 +26,4 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
+.vercel

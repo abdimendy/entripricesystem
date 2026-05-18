@@ -8,7 +8,7 @@ namespace YellowBook.API.Services;
 public interface IPdfService
 {
     Task<byte[]?> GenerateBusinessPdfAsync(int businessId);
-    Task<byte[]> GenerateReportPdfAsync();
+    Task<byte[]> GenerateReportPdfAsync(string? name = null, int? categoryId = null, string? city = null);
 }
 
 public class PdfService : IPdfService
@@ -54,9 +54,9 @@ public class PdfService : IPdfService
         return document.GeneratePdf();
     }
 
-    public async Task<byte[]> GenerateReportPdfAsync()
+    public async Task<byte[]> GenerateReportPdfAsync(string? name = null, int? categoryId = null, string? city = null)
     {
-        var businesses = (await _businessRepository.GetAllAsync()).ToList();
+        var businesses = (await _businessRepository.GetFilteredListAsync(name, categoryId, city, approvedOnly: true)).ToList();
 
         var document = Document.Create(container =>
         {
@@ -64,28 +64,39 @@ public class PdfService : IPdfService
             {
                 page.Size(PageSizes.A4);
                 page.Margin(40);
-                page.Header().Text("YellowBook — Business Report").FontSize(20).Bold();
-                page.Content().Table(table =>
+                page.Header().Column(h =>
+                {
+                    h.Item().Text("YellowBook — Telephone Directory").FontSize(20).Bold();
+                    h.Item().Text($"{businesses.Count} businesses · {DateTime.UtcNow:yyyy-MM-dd}").FontSize(10);
+                });
+                page.Content().PaddingTop(12).Table(table =>
                 {
                     table.ColumnsDefinition(c =>
                     {
                         c.RelativeColumn(3);
                         c.RelativeColumn(2);
                         c.RelativeColumn(2);
+                        c.RelativeColumn(2);
+                        c.RelativeColumn(2);
                     });
                     table.Header(h =>
                     {
-                        h.Cell().Text("Name").Bold();
-                        h.Cell().Text("Category").Bold();
-                        h.Cell().Text("City").Bold();
+                        h.Cell().Background(Colors.Amber.Lighten4).Padding(4).Text("Name").Bold();
+                        h.Cell().Background(Colors.Amber.Lighten4).Padding(4).Text("Phone").Bold();
+                        h.Cell().Background(Colors.Amber.Lighten4).Padding(4).Text("Category").Bold();
+                        h.Cell().Background(Colors.Amber.Lighten4).Padding(4).Text("City").Bold();
+                        h.Cell().Background(Colors.Amber.Lighten4).Padding(4).Text("Email").Bold();
                     });
                     foreach (var b in businesses)
                     {
-                        table.Cell().Text(b.Name);
-                        table.Cell().Text(b.Category?.Name ?? "-");
-                        table.Cell().Text(b.City);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(b.Name);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(b.Phone);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(b.Category?.Name ?? "-");
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(b.City);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(b.Email);
                     }
                 });
+                page.Footer().AlignCenter().Text("Yellow Book — Somalia Business Directory");
             });
         });
 

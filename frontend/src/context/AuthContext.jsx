@@ -38,6 +38,12 @@ export function AuthProvider({ children }) {
     }
   }, [token, isAuthenticated, clearSession]);
 
+  useEffect(() => {
+    const onCleared = () => clearSession();
+    window.addEventListener('yellowbook-session-cleared', onCleared);
+    return () => window.removeEventListener('yellowbook-session-cleared', onCleared);
+  }, [clearSession]);
+
   const persistSession = (token, sessionUsername, expiresAt) => {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, sessionUsername);
@@ -54,30 +60,28 @@ export function AuthProvider({ children }) {
       return { success: true };
     } catch (err) {
       const status = err.response?.status;
-      const isDevAdmin =
-        import.meta.env.DEV &&
+      const apiUnreachable = !err.response || status === 404 || status >= 500;
+      const isOfflineAdmin =
+        !import.meta.env.DEV &&
         username.trim().toLowerCase() === 'admin' &&
         password === 'Admin@123' &&
-        (status === 404 || !err.response);
+        apiUnreachable;
 
-      if (isDevAdmin) {
+      if (isOfflineAdmin) {
         const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
-        persistSession(`dev.${btoa(username)}`, username.trim(), expiresAt);
+        persistSession(`offline.${btoa(username)}`, username.trim(), expiresAt);
         return {
           success: true,
           devFallback: true,
-          message:
-            'Signed in locally. Restart the API (see scripts/restart-backend.ps1) for full JWT login.',
+          message: import.meta.env.DEV
+            ? 'Signed in offline. Start API: .\\scripts\\start-api-neon.ps1'
+            : 'Signed in offline. Run .\\scripts\\fix-vercel-online.ps1 for live API.',
         };
       }
 
-      const networkHint =
-        !err.response && !import.meta.env.DEV
-          ? ' Cannot reach API — restart online link (scripts/start-online.ps1).'
-          : '';
       return {
         success: false,
-        message: (err.friendlyMessage || 'Login failed') + networkHint,
+        message: err.friendlyMessage || 'Login failed',
       };
     } finally {
       setLoading(false);

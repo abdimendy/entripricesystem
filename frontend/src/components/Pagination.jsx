@@ -1,6 +1,8 @@
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Pagination({ page, totalPages, onPageChange }) {
+  const { t } = useLanguage();
   if (!totalPages || totalPages <= 1) return null;
 
   const pages = [];
@@ -9,14 +11,14 @@ export default function Pagination({ page, totalPages, onPageChange }) {
   for (let i = start; i <= end; i += 1) pages.push(i);
 
   return (
-    <nav className="flex flex-wrap items-center justify-center gap-2" aria-label="Pagination">
+    <nav className="flex flex-wrap items-center justify-center gap-2" aria-label={t('pagination.label')}>
       <button
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-yellow-50 disabled:opacity-40"
+        className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-yellow-50 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
       >
-        <HiChevronLeft /> Prev
+        <HiChevronLeft /> {t('pagination.prev')}
       </button>
       {start > 1 && (
         <>
@@ -37,9 +39,9 @@ export default function Pagination({ page, totalPages, onPageChange }) {
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-yellow-50 disabled:opacity-40"
+        className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-yellow-50 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
       >
-        Next <HiChevronRight />
+        {t('pagination.next')} <HiChevronRight />
       </button>
     </nav>
   );
@@ -53,7 +55,7 @@ function PageBtn({ n, active, onClick }) {
       className={`min-w-10 rounded-xl px-3 py-2 text-sm font-semibold transition ${
         active
           ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 shadow-md'
-          : 'border border-slate-200 bg-white text-slate-700 hover:bg-yellow-50'
+          : 'border border-slate-200 bg-white text-slate-700 hover:bg-yellow-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'
       }`}
     >
       {n}

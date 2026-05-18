@@ -7,6 +7,7 @@ import BusinessCard from '../components/BusinessCard';
 import SearchBar from '../components/SearchBar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PageHeader from '../components/PageHeader';
+import { normalizeSearchResponse } from '../utils/apiHelpers';
 
 export default function SearchBusiness() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,8 +26,8 @@ export default function SearchBusiness() {
     setSearched(true);
     setSearchParams({ q: term.trim() });
     try {
-      const { data } = await businessApi.search(term.trim());
-      setResults(data);
+      const { data } = await businessApi.search({ name: term.trim(), page: 1, pageSize: 24 });
+      setResults(normalizeSearchResponse(data).items);
     } catch (err) {
       toast.error(err.friendlyMessage || 'Search failed');
       setResults([]);

@@ -4,6 +4,7 @@ import { Tags, X, Pencil, Trash2, Plus } from 'lucide-react';
 import { categoryApi } from '../api/categoryApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PageHeader from '../components/PageHeader';
+import { ensureArray } from '../utils/apiHelpers';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -21,7 +22,7 @@ export default function Categories() {
     try {
       setLoading(true);
       const { data } = await categoryApi.getAll();
-      setCategories(data);
+      setCategories(ensureArray(data));
     } catch (err) {
       toast.error(err.friendlyMessage || 'Failed to load categories');
     } finally {

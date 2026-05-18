@@ -13,6 +13,8 @@ import StatsSection from '../components/home/StatsSection';
 import PaymentPreview from '../components/home/PaymentPreview';
 import TestimonialsSection from '../components/home/TestimonialsSection';
 import ContactSection from '../components/home/ContactSection';
+import { demoBusinessList, demoCategories, demoStats } from '../data/demoData';
+import { ensureArray } from '../utils/apiHelpers';
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
@@ -21,16 +23,19 @@ export default function Home() {
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   useEffect(() => {
-    categoryApi.getAll().then((r) => setCategories(r.data)).catch(() => {});
+    categoryApi
+      .getAll()
+      .then((r) => setCategories(ensureArray(r.data)))
+      .catch(() => setCategories(demoCategories));
     businessApi
       .getFeatured(6)
-      .then((r) => setFeatured(r.data))
-      .catch(() => {})
+      .then((r) => setFeatured(ensureArray(r.data)))
+      .catch(() => setFeatured(demoBusinessList.slice(0, 6)))
       .finally(() => setLoadingFeatured(false));
     dashboardApi
       .getStats()
       .then((r) => setStats(r.data))
-      .catch(() => {});
+      .catch(() => setStats(demoStats));
   }, []);
 
   return (

@@ -25,6 +25,8 @@ public class CreateReviewDto
 
     [Range(1, 5)]
     public int Rating { get; set; }
+
+    public string? CompanyWebsite { get; set; }
 }
 
 public class UpdateReviewDto

@@ -10,11 +10,15 @@ import CategoriesPage from './pages/CategoriesPage';
 import About from './pages/About';
 import Payment from './pages/Payment';
 import Contact from './pages/Contact';
+import AddBusiness from './pages/AddBusiness';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminBusinesses from './pages/admin/AdminBusinesses';
 import AdminCategories from './pages/admin/AdminCategories';
+import AdminPayments from './pages/admin/AdminPayments';
+import AdminPending from './pages/admin/AdminPending';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
 
 export default function App() {
   return (
@@ -42,6 +46,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/add-business" element={<AddBusiness />} />
           <Route path="/404" element={<NotFound />} />
         </Route>
 
@@ -56,6 +61,9 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="businesses" element={<AdminBusinesses />} />
           <Route path="categories" element={<AdminCategories />} />
+          <Route path="payments" element={<AdminPayments />} />
+          <Route path="pending" element={<AdminPending />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/404" replace />} />

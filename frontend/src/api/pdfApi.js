@@ -1,25 +1,25 @@
 import api from './axiosInstance';
+import { blobErrorMessage, downloadBlob } from '../utils/downloadBlob';
 
-function triggerDownload(blob, filename) {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
+async function fetchPdf(path, filename) {
+  const { data, headers } = await api.get(path, { responseType: 'blob' });
+  const type = data?.type || headers?.['content-type'] || '';
+  if (!type.includes('pdf')) {
+    const message = await blobErrorMessage(data, 'Could not generate PDF');
+    throw { friendlyMessage: message };
+  }
+  downloadBlob(data, filename);
 }
 
 export const pdfApi = {
-  downloadBusiness: async (id, filename = `business-${id}.pdf`) => {
-    const { data } = await api.get(`/pdf/business/${id}`, { responseType: 'blob' });
-    triggerDownload(data, filename);
-    return data;
-  },
-  downloadReport: async (filename = 'yellowbook-report.pdf') => {
-    const { data } = await api.get('/pdf/report', { responseType: 'blob' });
-    triggerDownload(data, filename);
-    return data;
+  downloadBusiness: (id) =>
+    fetchPdf(`/pdf/business/${id}`, `yellowbook-business-${id}.pdf`),
+  downloadDirectory: (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.name) qs.set('name', params.name);
+    if (params.categoryId) qs.set('categoryId', params.categoryId);
+    if (params.city) qs.set('city', params.city);
+    const q = qs.toString();
+    return fetchPdf(`/pdf/report${q ? `?${q}` : ''}`, 'yellowbook-directory.pdf');
   },
 };
