@@ -12,15 +12,18 @@ Pop-Location
 
 $vercelJson = @'
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "installCommand": "npm ci --prefix frontend || npm install --prefix frontend",
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
+    { "source": "/favicon.ico", "destination": "/favicon.svg" },
+    { "source": "/api/health", "destination": "/_data/health.json" },
     { "source": "/api/categories", "destination": "/_data/categories.json" },
     { "source": "/api/businesses/featured", "destination": "/_data/featured.json" },
     { "source": "/api/businesses/search", "destination": "/_data/search.json" },
     { "source": "/api/dashboard/stats", "destination": "/_data/stats.json" },
-    { "source": "/api/health", "destination": "/_data/health.json" },
     { "source": "/api/businesses", "destination": "/_data/businesses.json" },
     { "handle": "filesystem" },
     { "source": "/(.*)", "destination": "/index.html" }

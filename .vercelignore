@@ -1,0 +1,3 @@
+# Allow Vercel to upload built assets when needed; server build is primary.
+# Do not ignore frontend/dist for CLI uploads that skip remote build.
+!frontend/dist
